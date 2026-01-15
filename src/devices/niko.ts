@@ -43,12 +43,12 @@ const local = {
                      *          enum8 (switch) vs. bitmap8 (outlet)
                      *          unknown usage/function on outlet
                      */
-                    switchOperationMode: {ID: 0x0000, type: Zcl.DataType.ENUM8},
-                    outletLedColor: {ID: 0x0100, type: Zcl.DataType.UINT24},
-                    outletChildLock: {ID: 0x0101, type: Zcl.DataType.UINT8},
-                    outletLedState: {ID: 0x0104, type: Zcl.DataType.UINT8},
+                    switchOperationMode: {ID: 0x0000, type: Zcl.DataType.ENUM8, write: true, max: 0xff},
+                    outletLedColor: {ID: 0x0100, type: Zcl.DataType.UINT24, write: true, max: 0xffffff},
+                    outletChildLock: {ID: 0x0101, type: Zcl.DataType.UINT8, write: true, max: 0xff},
+                    outletLedState: {ID: 0x0104, type: Zcl.DataType.UINT8, write: true, max: 0xff},
                     /* WARNING: 0x0107 is not supported on older switches */
-                    ledSyncMode: {ID: 0x0107, type: Zcl.DataType.BITMAP32},
+                    ledSyncMode: {ID: 0x0107, type: Zcl.DataType.BITMAP32, write: true},
                 },
                 commands: {},
                 commandsResponse: {},
@@ -58,8 +58,8 @@ const local = {
                 ID: 0xfc01,
                 manufacturerCode: Zcl.ManufacturerCode.NIKO_NV,
                 attributes: {
-                    switchActionReporting: {ID: 0x0001, type: Zcl.DataType.BITMAP8},
-                    switchAction: {ID: 0x0002, type: Zcl.DataType.UINT8},
+                    switchActionReporting: {ID: 0x0001, type: Zcl.DataType.BITMAP8, write: true},
+                    switchAction: {ID: 0x0002, type: Zcl.DataType.BITMAP32, write: true, max: 0x7ffff},
                 },
                 commands: {},
                 commandsResponse: {},
@@ -85,8 +85,7 @@ const local = {
                 const state: KeyValue = {};
 
                 if (msg.data.switchActionReporting !== undefined) {
-                    const actionReportingMap: KeyValue = {0: false, 31: true};
-                    state.action_reporting = utils.getFromLookup(msg.data.switchActionReporting, actionReportingMap);
+                    state.action_reporting = Boolean(msg.data.switchActionReporting & 0x1e);
                 }
                 if (msg.data.switchAction !== undefined) {
                     // NOTE: a single press = two separate values reported, 16 followed by 64
@@ -198,7 +197,12 @@ const local = {
         switch_action_reporting: {
             key: ["action_reporting"],
             convertSet: async (entity, key, value, meta) => {
-                const actionReportingMap: KeyValue = {false: 0x00, true: 0x1f};
+                // Bit 0: unknown, but set in a reset device. Leave as-is.
+                //     1: enable reporting for channel 1 button
+                //     2: enable reporting for channel 1 ext. button input
+                //     3: enable reporting for channel 2 button
+                //     4: enable reporting for channel 2 ext. button input
+                const actionReportingMap: KeyValue = {false: 0x01, true: 0x1f};
                 // @ts-expect-error ignore
                 if (actionReportingMap[value] === undefined) {
                     throw new Error(`action_reporting was called with an invalid value (${value})`);

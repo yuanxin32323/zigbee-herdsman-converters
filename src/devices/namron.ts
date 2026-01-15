@@ -236,6 +236,15 @@ export const definitions: DefinitionWithExtend[] = [
         extend: [m.light({configureReporting: true})],
     },
     {
+        zigbeeModel: ["4512739"],
+        model: "4512739",
+        vendor: "Namron",
+        description: "Zigbee dimmer TW 400W",
+        ota: true,
+        extend: [m.light({configureReporting: true, colorTemp: {range: [160, 450]}})],
+        // colorTemp not tested
+    },
+    {
         zigbeeModel: ["4512760"],
         model: "4512760",
         vendor: "Namron",
@@ -1592,10 +1601,11 @@ export const definitions: DefinitionWithExtend[] = [
         extend: [m.light({effect: false, configureReporting: true}), m.electricityMeter({cluster: "electrical"})],
     },
     {
-        zigbeeModel: ["4512783", "4512784"],
+        zigbeeModel: ["4512783", "4512784", "4566702"],
         model: "4512783/4512784",
         vendor: "Namron",
         description: "Namron edge thermostat",
+        whiteLabel: [{vendor: "Namron", model: "4566702", fingerprint: [{modelID: "4566702"}]}],
         fromZigbee: [
             fz.thermostat,
             namron.fromZigbee.namron_edge_thermostat_holiday_temp,

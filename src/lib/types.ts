@@ -66,7 +66,7 @@ export interface Fingerprint {
     priority?: number;
 }
 export type WhiteLabel =
-    | {vendor: string; model: string; description: string; fingerprint: Fingerprint[]}
+    | {vendor?: string; model: string; description?: string; fingerprint: Fingerprint[]}
     | {vendor: string; model: string; description?: string};
 
 export interface MockProperty {
@@ -446,7 +446,7 @@ export namespace Tuya {
             publish?: Publish,
             // biome-ignore lint/suspicious/noExplicitAny: value is validated on per-case basis
             msg?: Fz.Message<any>,
-        ) => number | string | boolean | KeyValue | null;
+        ) => number | string | boolean | KeyValue | KeyValue[] | null;
     }
     export interface MetaTuyaDataPointsMeta {
         skip?: (meta: Tz.Meta) => boolean;

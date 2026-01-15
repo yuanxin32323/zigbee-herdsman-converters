@@ -13,6 +13,9 @@ const SHELLY_OPTIONS = {profileId: ZSpec.CUSTOM_SHELLY_PROFILE_ID};
 
 const NS = "zhc:shelly";
 
+const HA_ELECTRICAL_MEASUREMENT_CLUSTER_ID = 0x0b04;
+const HA_ELECTRICAL_MEASUREMENT_POWER_FACTOR_ATTR_ID = 0x0510;
+
 interface ShellyRPC {
     attributes: {
         data: string;
@@ -24,15 +27,27 @@ interface ShellyRPC {
 }
 
 const shellyModernExtend = {
+    shellyPowerFactorInt16Fix(): ModernExtend {
+        // Shelly Gen4 devices report haElectricalMeasurement.powerFactor (0x0510) as INT16 (0x29)
+        // while zigbee-herdsman defines it as INT8 (0x28). This breaks configureReporting (INVALID_DATA_TYPE).
+        return m.deviceAddCustomCluster("haElectricalMeasurement", {
+            ID: HA_ELECTRICAL_MEASUREMENT_CLUSTER_ID,
+            attributes: {
+                powerFactor: {ID: HA_ELECTRICAL_MEASUREMENT_POWER_FACTOR_ATTR_ID, type: Zcl.DataType.INT16},
+            },
+            commands: {},
+            commandsResponse: {},
+        });
+    },
     shellyCustomClusters(): ModernExtend[] {
         return [
             m.deviceAddCustomCluster("shellyRPCCluster", {
                 ID: 0xfc01,
                 manufacturerCode: Zcl.ManufacturerCode.SHELLY,
                 attributes: {
-                    data: {ID: 0x0000, type: Zcl.DataType.CHAR_STR},
-                    txCtl: {ID: 0x0001, type: Zcl.DataType.UINT32},
-                    rxCtl: {ID: 0x0002, type: Zcl.DataType.UINT32},
+                    data: {ID: 0x0000, type: Zcl.DataType.CHAR_STR, write: true},
+                    txCtl: {ID: 0x0001, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
+                    rxCtl: {ID: 0x0002, type: Zcl.DataType.UINT32, write: true, max: 0xffffffff},
                 },
                 commands: {},
                 commandsResponse: {},
@@ -41,17 +56,17 @@ const shellyModernExtend = {
                 ID: 0xfc02,
                 manufacturerCode: Zcl.ManufacturerCode.SHELLY,
                 attributes: {
-                    status: {ID: 0x0000, type: Zcl.DataType.CHAR_STR},
-                    ip: {ID: 0x0001, type: Zcl.DataType.CHAR_STR},
-                    actionCode: {ID: 0x0002, type: Zcl.DataType.UINT8},
-                    dhcp: {ID: 0x0003, type: Zcl.DataType.BOOLEAN},
-                    enabled: {ID: 0x0004, type: Zcl.DataType.BOOLEAN},
-                    ssid: {ID: 0x0005, type: Zcl.DataType.CHAR_STR},
-                    password: {ID: 0x0006, type: Zcl.DataType.CHAR_STR},
-                    staticIp: {ID: 0x0007, type: Zcl.DataType.CHAR_STR},
-                    netMask: {ID: 0x0008, type: Zcl.DataType.CHAR_STR},
-                    gateway: {ID: 0x0009, type: Zcl.DataType.CHAR_STR},
-                    nameServer: {ID: 0x000a, type: Zcl.DataType.CHAR_STR},
+                    status: {ID: 0x0000, type: Zcl.DataType.CHAR_STR, write: true},
+                    ip: {ID: 0x0001, type: Zcl.DataType.CHAR_STR, write: true},
+                    actionCode: {ID: 0x0002, type: Zcl.DataType.UINT8, write: true, max: 0xff},
+                    dhcp: {ID: 0x0003, type: Zcl.DataType.BOOLEAN, write: true},
+                    enabled: {ID: 0x0004, type: Zcl.DataType.BOOLEAN, write: true},
+                    ssid: {ID: 0x0005, type: Zcl.DataType.CHAR_STR, write: true},
+                    password: {ID: 0x0006, type: Zcl.DataType.CHAR_STR, write: true},
+                    staticIp: {ID: 0x0007, type: Zcl.DataType.CHAR_STR, write: true},
+                    netMask: {ID: 0x0008, type: Zcl.DataType.CHAR_STR, write: true},
+                    gateway: {ID: 0x0009, type: Zcl.DataType.CHAR_STR, write: true},
+                    nameServer: {ID: 0x000a, type: Zcl.DataType.CHAR_STR, write: true},
                 },
                 commands: {},
                 commandsResponse: {},
@@ -514,6 +529,7 @@ export const definitions: DefinitionWithExtend[] = [
         extend: [
             m.onOff({powerOnBehavior: false}),
             m.electricityMeter({producedEnergy: true, acFrequency: true}),
+            shellyModernExtend.shellyPowerFactorInt16Fix(),
             ...shellyModernExtend.shellyCustomClusters(),
             shellyModernExtend.shellyWiFiSetup(),
         ],
@@ -526,6 +542,7 @@ export const definitions: DefinitionWithExtend[] = [
         extend: [
             m.onOff({powerOnBehavior: false}),
             m.electricityMeter({producedEnergy: true, acFrequency: true}),
+            shellyModernExtend.shellyPowerFactorInt16Fix(),
             ...shellyModernExtend.shellyCustomClusters(),
             shellyModernExtend.shellyWiFiSetup(),
         ],
@@ -537,6 +554,7 @@ export const definitions: DefinitionWithExtend[] = [
         description: "EM Mini Gen4",
         extend: [
             m.electricityMeter({producedEnergy: true, acFrequency: true}),
+            shellyModernExtend.shellyPowerFactorInt16Fix(),
             ...shellyModernExtend.shellyCustomClusters(),
             shellyModernExtend.shellyWiFiSetup(),
         ],
@@ -580,6 +598,20 @@ export const definitions: DefinitionWithExtend[] = [
             m.deviceEndpoints({endpoints: {l1: 1, l2: 2}}),
             m.onOff({powerOnBehavior: false, endpointNames: ["l1", "l2"]}),
             m.electricityMeter({producedEnergy: true, acFrequency: true, endpointNames: ["l1", "l2"]}),
+            shellyModernExtend.shellyPowerFactorInt16Fix(),
+            ...shellyModernExtend.shellyCustomClusters(),
+            shellyModernExtend.shellyWiFiSetup(),
+        ],
+    },
+    {
+        fingerprint: [{modelID: "Plug US", manufacturerName: "Shelly"}],
+        model: "S4PL-00116US",
+        vendor: "Shelly",
+        description: "Plug US Gen4",
+        extend: [
+            m.onOff({powerOnBehavior: false}),
+            m.electricityMeter(),
+            shellyModernExtend.shellyPowerFactorInt16Fix(),
             ...shellyModernExtend.shellyCustomClusters(),
             shellyModernExtend.shellyWiFiSetup(),
         ],
@@ -593,6 +625,7 @@ export const definitions: DefinitionWithExtend[] = [
             m.deviceEndpoints({endpoints: {"1": 1, "2": 2, "3": 3, "4": 4}}),
             m.onOff({powerOnBehavior: false, endpointNames: ["1", "2", "3", "4"]}),
             m.electricityMeter({endpointNames: ["1", "2", "3", "4"]}),
+            shellyModernExtend.shellyPowerFactorInt16Fix(),
             ...shellyModernExtend.shellyCustomClusters(),
             shellyModernExtend.shellyRPCSetup(["PowerstripUI"]),
             shellyModernExtend.shellyWiFiSetup(),
@@ -712,5 +745,25 @@ export const definitions: DefinitionWithExtend[] = [
                 access: "STATE_GET",
             }),
         ],
+    },
+    {
+        fingerprint: [{modelID: "Dimmer", manufacturerName: "Shelly"}],
+        model: "S4DM-0A101WWL",
+        vendor: "Shelly",
+        description: "Dimmer Gen4",
+        extend: [
+            m.light({configureReporting: true}),
+            m.electricityMeter(),
+            shellyModernExtend.shellyPowerFactorInt16Fix(),
+            ...shellyModernExtend.shellyCustomClusters(),
+            shellyModernExtend.shellyWiFiSetup(),
+        ],
+    },
+    {
+        fingerprint: [{modelID: "BLU H&T ZB", manufacturerName: "Shelly"}],
+        model: "SBHT-203C",
+        vendor: "Shelly",
+        description: "Humidity & temperature sensor",
+        extend: [m.battery(), m.temperature(), m.humidity()],
     },
 ];

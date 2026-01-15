@@ -157,7 +157,6 @@ async function getJson<T>(pageUrl: string): Promise<T> {
 function readLocalFile(fileName: string): Buffer {
     // If the file name is not a full path, then treat it as a relative to the data directory
     if (!path.isAbsolute(fileName) && dataDir) {
-        // biome-ignore lint/style/noParameterAssign: ignored using `--suppress`
         fileName = path.join(dataDir, fileName);
     }
 
@@ -489,7 +488,13 @@ function getImageBlockResponsePayload(
     pageOffset: number,
     pageSize: number,
 ): ImageBlockResponsePayload {
-    let dataSize = Math.min(getInitialMaximumDataSize(imageBlockRequest), imageBlockRequest.payload.maximumDataSize);
+    const initialMaximumDataSize = getInitialMaximumDataSize(imageBlockRequest);
+    // Some devices send `imageBlockRequest.payload.maximumDataSize` 0xFF which is translated to `null` according to the spec.
+    // In that case default to the `initialMaximumDataSize`.
+    // e.g. Develco https://github.com/Koenkk/zigbee-OTA/issues/863#issuecomment-3736158829
+    let dataSize = Number.isFinite(imageBlockRequest.payload.maximumDataSize)
+        ? Math.min(initialMaximumDataSize, imageBlockRequest.payload.maximumDataSize)
+        : initialMaximumDataSize;
     let start = imageBlockRequest.payload.fileOffset + pageOffset;
 
     // Hack for https://github.com/Koenkk/zigbee-OTA/issues/328 (Legrand OTA not working)
@@ -612,7 +617,6 @@ async function isImageAvailable(
         // https://github.com/Koenkk/zigbee2mqtt/issues/16345 doesn't seem to be needed for all
         // https://github.com/Koenkk/zigbee2mqtt/issues/15745
         if (device.meta.lumiFileVersion) {
-            // biome-ignore lint/style/noParameterAssign: ignored using `--suppress`
             current = {...current, fileVersion: device.meta.lumiFileVersion};
         }
     }
@@ -739,7 +743,6 @@ export async function isUpdateAvailable(
 
         logger.debug(() => `${deviceLogString(device)} Got request '${JSON.stringify(payload)}'`, NS);
 
-        // biome-ignore lint/style/noParameterAssign: ignored using `--suppress`
         requestPayload = payload;
     }
 
@@ -832,7 +835,6 @@ export async function update(
     }
 
     if (!requestPayload) {
-        // biome-ignore lint/style/noParameterAssign: ignored using `--suppress`
         [reqTransNum, requestPayload] = await requestOTA(endpoint);
 
         logger.debug(() => `${deviceLogString(device)} Got request payload '${JSON.stringify(requestPayload)}'`, NS);
@@ -898,7 +900,6 @@ export async function update(
                 imageBlockRequest.header.transactionSequenceNumber,
             );
 
-            // biome-ignore lint/style/noParameterAssign: ignored using `--suppress`
             pageOffset += blockPayload.dataSize;
         } catch (error) {
             // Shit happens, device will probably do a new imageBlockRequest so don't care.
