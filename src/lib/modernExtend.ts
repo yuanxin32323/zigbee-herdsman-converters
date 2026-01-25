@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import {Zcl} from "zigbee-herdsman";
+import type {Device} from "zigbee-herdsman/dist/controller/model";
 import type {
     ClusterOrRawAttributeKeys,
     PartialClusterOrRawWriteAttributes,
@@ -1375,7 +1376,8 @@ export type ColorCtrlCommand =
     | "hue_move"
     | "hue_stop"
     | "move_to_saturation"
-    | "move_to_hue";
+    | "move_to_hue"
+    | "stop_move_step";
 export interface CommandsColorCtrl {
     commands?: ColorCtrlCommand[];
     bind?: boolean;
@@ -1402,6 +1404,7 @@ export function commandsColorCtrl(args: CommandsColorCtrl = {}): ModernExtend {
             "hue_stop",
             "move_to_saturation",
             "move_to_hue",
+            "stop_move_step",
         ],
         bind = true,
         endpointNames = undefined,
@@ -1427,6 +1430,7 @@ export function commandsColorCtrl(args: CommandsColorCtrl = {}): ModernExtend {
         fz.command_move_hue,
         fz.command_move_to_saturation,
         fz.command_move_to_hue,
+        fz.command_stop_move_step,
     ];
 
     const result: ModernExtend = {exposes, fromZigbee, isModernExtend: true};
@@ -1652,7 +1656,7 @@ export interface IasArgs {
     zoneType: IasZoneType;
     zoneAttributes: IasZoneAttribute[];
     alarmTimeout?: boolean;
-    keepAliveTimeout?: number;
+    keepAliveTimeout?: (device: Device) => number;
     zoneStatusReporting?: boolean;
     description?: string;
     invertAlarm?: true;
@@ -1776,14 +1780,15 @@ export function iasZoneAlarm(args: IasArgs): ModernExtend {
                         payload = {[alarm2Name]: alarm2Payload, ...payload};
                         addTimeout ||= alarm2Payload;
                     }
-                    if (isChange && args.keepAliveTimeout > 0) {
+                    const keepAliveTimeout = args?.keepAliveTimeout?.(msg.device);
+                    if (isChange && keepAliveTimeout !== undefined && keepAliveTimeout > 0) {
                         // This sensor continuously sends occupation updates as long as motion is detected; (re)start a timeout
                         // each time we receive one, in case the clearance message gets lost. Normally, these kinds of sensors
                         // send a clearance message, so this is an additional safety measure.
                         clearTimeout(globalStore.getValue(msg.endpoint, "timeout"));
                         if (addTimeout) {
                             // At least one zone active
-                            const timer = setTimeout(() => publish({[alarm1Name]: false, [alarm2Name]: false}), args.keepAliveTimeout * 1000);
+                            const timer = setTimeout(() => publish({[alarm1Name]: false, [alarm2Name]: false}), keepAliveTimeout * 1000);
                             globalStore.putValue(msg.endpoint, "timeout", timer);
                         } else {
                             globalStore.clearValue(msg.endpoint, "timeout");
