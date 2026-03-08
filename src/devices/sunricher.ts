@@ -248,6 +248,13 @@ export const definitions: DefinitionWithExtend[] = [
         meta: {multiEndpoint: true},
     },
     {
+        zigbeeModel: ["ZGRC-KEY-043"],
+        model: "SR-ZG2868EK7-CCT",
+        vendor: "Sunricher",
+        description: "Zigbee lighting remote control",
+        extend: [m.battery(), m.commandsOnOff(), m.commandsLevelCtrl(), m.commandsColorCtrl(), m.commandsScenes()],
+    },
+    {
         zigbeeModel: ["ZG9098A-WinOnly"],
         model: "SR-ZG9081A",
         vendor: "Sunricher",
@@ -952,13 +959,13 @@ export const definitions: DefinitionWithExtend[] = [
                     await syncTimeWithTimeZone(endpoint);
 
                     break;
-                } catch (e) {
+                } catch (error) {
                     retryCount++;
-                    logger.warning(`Configure attempt ${retryCount} failed: ${e}`, NS);
+                    logger.warning(`Configure attempt ${retryCount} failed: ${error}`, NS);
 
                     if (retryCount === maxRetries) {
                         logger.error(`Failed to configure device after ${maxRetries} attempts`, NS);
-                        throw e;
+                        throw error;
                     }
 
                     await new Promise((resolve) => setTimeout(resolve, 2000 * retryCount));
@@ -1474,7 +1481,7 @@ export const definitions: DefinitionWithExtend[] = [
         model: "HK-SENSOR-4IN1-A",
         vendor: "Sunricher",
         description: "4IN1 Sensor",
-        extend: [m.battery(), m.identify(), m.occupancy(), m.temperature(), m.humidity(), m.illuminance()],
+        extend: [m.battery({dontDividePercentage: true}), m.identify(), m.occupancy(), m.temperature(), m.humidity(), m.illuminance()],
     },
     {
         zigbeeModel: ["SR-ZG9023A-EU"],
@@ -1484,7 +1491,7 @@ export const definitions: DefinitionWithExtend[] = [
         extend: [m.deviceEndpoints({endpoints: {l1: 1, l2: 2, l3: 3, l4: 4, l5: 5}}), m.onOff({endpointNames: ["l1", "l2", "l3", "l4", "l5"]})],
     },
     {
-        zigbeeModel: ["ON/OFF(2CH)"],
+        fingerprint: [{modelID: "ON/OFF(2CH)", manufacturerName: "Sunricher", priority: 1}],
         model: "SR-ZG9101SAC-HP-SWITCH-2CH",
         vendor: "Sunricher",
         description: "Zigbee 2 channels switch",
@@ -1670,11 +1677,18 @@ export const definitions: DefinitionWithExtend[] = [
         extend: [m.light({configureReporting: true})],
     },
     {
-        zigbeeModel: ["ON/OFF -M", "ON/OFF", "ZIGBEE-SWITCH"],
+        zigbeeModel: ["ON/OFF", "ZIGBEE-SWITCH"],
         model: "ZG9101SAC-HP-Switch",
         vendor: "Sunricher",
         description: "Zigbee AC in wall switch",
-        extend: [m.onOff({powerOnBehavior: false}), sunricher.extend.externalSwitchType()],
+        extend: [m.onOff({powerOnBehavior: false, configureReporting: true}), sunricher.extend.externalSwitchType()],
+    },
+    {
+        zigbeeModel: ["ON/OFF -M"],
+        model: "ZG9101SAC-HP-Switch-B",
+        vendor: "Sunricher",
+        description: "Zigbee AC in wall switch with metering",
+        extend: [m.onOff({powerOnBehavior: false, configureReporting: true}), sunricher.extend.externalSwitchType(), m.electricityMeter()],
     },
     {
         zigbeeModel: ["Micro Smart Dimmer", "SM311", "HK-SL-RDIM-A", "HK-SL-DIM-EU-A"],
@@ -1717,7 +1731,7 @@ export const definitions: DefinitionWithExtend[] = [
         ],
     },
     {
-        zigbeeModel: ["HK-SL-DIM-A"],
+        fingerprint: [{modelID: "HK-SL-DIM-A", manufacturerName: "Sunricher", priority: 1}],
         model: "SR-ZG9040A/ZG9041A-D",
         vendor: "Sunricher",
         description: "Zigbee micro smart dimmer",

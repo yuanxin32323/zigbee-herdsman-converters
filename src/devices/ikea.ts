@@ -6,6 +6,7 @@ import {
     addCustomClusterManuSpecificIkeaSmartPlug,
     addCustomClusterManuSpecificIkeaUnknown,
     addCustomClusterManuSpecificIkeaVocIndexMeasurement,
+    addCustomClusterTradfriButton,
     ikeaAirPurifier,
     ikeaArrowClick,
     ikeaBattery,
@@ -455,7 +456,7 @@ export const definitions: DefinitionWithExtend[] = [
         extend: [addCustomClusterManuSpecificIkeaUnknown(), ikeaLight(), m.identify()],
     },
     {
-        zigbeeModel: ["JETSTROM 40100"],
+        zigbeeModel: ["JETSTROM 40100", "JETSTROM 40100 NA"],
         model: "L2208",
         vendor: "IKEA",
         description: "JETSTROM ceiling light panel, white spectrum, 100x40 cm",
@@ -673,7 +674,7 @@ export const definitions: DefinitionWithExtend[] = [
     },
     {
         // https://github.com/Koenkk/zigbee2mqtt/issues/30211#issuecomment-3697858054
-        zigbeeModel: ["KAJPLATS E27 WS G60 clear 470lm"],
+        zigbeeModel: ["KAJPLATS E27 WS G60 clear 470lm", "KAJPLATS E27 470lm smart WS"],
         model: "LED2411G3",
         vendor: "IKEA",
         description: "KAJPLATS E27 bulb, white spectrum, globe, clear, 470 lm",
@@ -977,7 +978,7 @@ export const definitions: DefinitionWithExtend[] = [
         vendor: "IKEA",
         description: "BILRESA remote control with buttons",
         extend: [
-            m.battery(),
+            m.battery({voltage: true}),
             m.identify({isSleepy: true}),
             m.commandsOnOff({commands: ["on", "off"]}),
             m.commandsLevelCtrl({commands: ["brightness_move_up", "brightness_move_down", "brightness_stop"]}),
@@ -991,7 +992,7 @@ export const definitions: DefinitionWithExtend[] = [
         vendor: "IKEA",
         description: "BILRESA remote control with scroll wheel",
         extend: [
-            m.battery(),
+            m.battery({voltage: true}),
             m.identify({isSleepy: true}),
             m.commandsOnOff({commands: ["on", "off"]}),
             m.commandsLevelCtrl({commands: ["brightness_move_to_level"]}),
@@ -1090,6 +1091,7 @@ export const definitions: DefinitionWithExtend[] = [
         vendor: "IKEA",
         description: "SYMFONISK sound remote, gen 2",
         extend: [
+            addCustomClusterTradfriButton(),
             m.bindCluster({cluster: "genPollCtrl", clusterType: "input"}),
             m.deviceEndpoints({endpoints: {"1": 2, "2": 3}}),
             m.identify({isSleepy: true}),
@@ -1122,6 +1124,7 @@ export const definitions: DefinitionWithExtend[] = [
         description: "SOMRIG shortcut button",
         extend: [
             addCustomClusterManuSpecificIkeaUnknown(),
+            addCustomClusterTradfriButton(),
             m.bindCluster({cluster: "genPollCtrl", clusterType: "input"}),
             m.deviceEndpoints({endpoints: {"1": 1, "2": 2}}),
             m.identify({isSleepy: true}),
@@ -1166,7 +1169,6 @@ export const definitions: DefinitionWithExtend[] = [
             m.humidity(),
             m.pm25({reporting: {min: "1_MINUTE", max: "2_MINUTES", change: 2}}),
             ikeaVoc(),
-            m.identify(),
         ],
         ota: true,
     },

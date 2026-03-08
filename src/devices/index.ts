@@ -217,6 +217,7 @@ import {definitions as nexelec} from "./nexelec";
 import {definitions as niko} from "./niko";
 import {definitions as ninjaBlocks} from "./ninja_blocks";
 import {definitions as niviss} from "./niviss";
+import {definitions as nobo} from "./nobo";
 import {definitions as nodon} from "./nodon";
 import {definitions as nordtronic} from "./nordtronic";
 import {definitions as nous} from "./nous";
@@ -300,6 +301,7 @@ import {definitions as somfy} from "./somfy";
 import {definitions as somgoms} from "./somgoms";
 import {definitions as sonoff} from "./sonoff";
 import {definitions as sowilo} from "./sowilo";
+import {definitions as spacetronik} from "./spacetronik";
 import {definitions as spotmau} from "./spotmau";
 import {definitions as sprut} from "./sprut";
 import {definitions as stello} from "./stello";
@@ -309,6 +311,7 @@ import {definitions as superled} from "./superled";
 import {definitions as swann} from "./swann";
 import {definitions as sylvania} from "./sylvania";
 import {definitions as tapestry} from "./tapestry";
+import {definitions as taskLighting} from "./task_lighting";
 import {definitions as tci} from "./tci";
 import {definitions as tcl} from "./tcl";
 import {definitions as tech} from "./tech";
@@ -316,6 +319,7 @@ import {definitions as technicolor} from "./technicolor";
 import {definitions as terncy} from "./terncy";
 import {definitions as theLightGroup} from "./the_light_group";
 import {definitions as thirdReality} from "./third_reality";
+import {definitions as tisControl} from "./tis_control";
 import {definitions as titanProducts} from "./titan_products";
 import {definitions as tlwglobal} from "./tlwglobal";
 import {definitions as tnce} from "./tnce";
@@ -346,6 +350,7 @@ import {definitions as woolley} from "./woolley";
 import {definitions as woox} from "./woox";
 import {definitions as wyze} from "./wyze";
 import {definitions as xal} from "./xal";
+import {definitions as xenon} from "./xenon";
 import {definitions as xinghuoyuan} from "./xinghuoyuan";
 import {definitions as xyzroe} from "./xyzroe";
 import {definitions as yale} from "./yale";
@@ -354,6 +359,7 @@ import {definitions as ynoa} from "./ynoa";
 import {definitions as yokis} from "./yokis";
 import {definitions as yookee} from "./yookee";
 import {definitions as ysrsai} from "./ysrsai";
+import {definitions as zbeacon} from "./zbeacon";
 import {definitions as zemismart} from "./zemismart";
 import {definitions as zen} from "./zen";
 import {definitions as zigbeetlc} from "./zigbeetlc";
@@ -580,6 +586,7 @@ const definitions: DefinitionWithExtend[] = [
     ...nodon,
     ...nordtronic,
     ...nous,
+    ...nobo,
     ...novo,
     ...nue3a,
     ...nyce,
@@ -660,6 +667,7 @@ const definitions: DefinitionWithExtend[] = [
     ...somgoms,
     ...sonoff,
     ...sowilo,
+    ...spacetronik,
     ...spotmau,
     ...sprut,
     ...stello,
@@ -668,6 +676,7 @@ const definitions: DefinitionWithExtend[] = [
     ...superled,
     ...swann,
     ...sylvania,
+    ...taskLighting,
     ...tapestry,
     ...tci,
     ...tcl,
@@ -676,6 +685,7 @@ const definitions: DefinitionWithExtend[] = [
     ...terncy,
     ...theLightGroup,
     ...thirdReality,
+    ...tisControl,
     ...titanProducts,
     ...tlwglobal,
     ...tnce,
@@ -705,6 +715,7 @@ const definitions: DefinitionWithExtend[] = [
     ...wmun,
     ...wyze,
     ...xal,
+    ...xenon,
     ...xinghuoyuan,
     ...xyzroe,
     ...yale,
@@ -713,6 +724,7 @@ const definitions: DefinitionWithExtend[] = [
     ...yokis,
     ...yookee,
     ...ysrsai,
+    ...zbeacon,
     ...zemismart,
     ...zen,
     ...zigbeetlc,

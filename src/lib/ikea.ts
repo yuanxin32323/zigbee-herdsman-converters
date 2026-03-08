@@ -501,11 +501,12 @@ export function ikeaAirPurifier(): ModernExtend {
 export function ikeaVoc(args?: Partial<m.NumericArgs<"manuSpecificIkeaVocIndexMeasurement", IkeaVocIndexMeasurement>>) {
     return m.numeric<"manuSpecificIkeaVocIndexMeasurement", IkeaVocIndexMeasurement>({
         name: "voc_index",
-        label: "VOC index",
+        label: "tVOC",
+        unit: "μg/m³",
         cluster: "manuSpecificIkeaVocIndexMeasurement",
         attribute: "measuredValue",
         reporting: {min: "1_MINUTE", max: "2_MINUTES", change: 1},
-        description: "Sensirion VOC index",
+        description: "Sensirion tVOC",
         access: "STATE",
         ...args,
     });
@@ -732,7 +733,7 @@ export function ikeaDotsClick(args: {actionLookup?: KeyValue; dotsPrefix?: boole
             },
         } satisfies Fz.Converter<
             "tradfriButton",
-            undefined,
+            TradfriButton,
             ["commandAction1", "commandAction2", "commandAction3", "commandAction4", "commandAction6"]
         >,
     ];
@@ -937,6 +938,54 @@ export function addCustomClusterManuSpecificIkeaUnknown(): ModernExtend {
         manufacturerCode: Zcl.ManufacturerCode.IKEA_OF_SWEDEN,
         attributes: {},
         commands: {},
+        commandsResponse: {},
+    });
+}
+
+export interface TradfriButton {
+    attributes: never;
+    commands: {
+        /** ID=0x01 */
+        action1: {
+            /** type=UINT8 | max=255 */
+            data: number;
+        };
+        /** ID=0x02 */
+        action2: {
+            /** type=UINT8 | max=255 */
+            data: number;
+        };
+        /** ID=0x03 */
+        action3: {
+            /** type=UINT8 | max=255 */
+            data: number;
+        };
+        /** ID=0x04 */
+        action4: {
+            /** type=UINT8 | max=255 */
+            data: number;
+        };
+        /** ID=0x06 */
+        action6: {
+            /** type=UINT8 | max=255 */
+            data: number;
+        };
+    };
+    commandResponses: never;
+}
+
+export function addCustomClusterTradfriButton(): ModernExtend {
+    return m.deviceAddCustomCluster("tradfriButton", {
+        ID: 0xfc80,
+        manufacturerCode: Zcl.ManufacturerCode.IKEA_OF_SWEDEN,
+        attributes: {},
+        commands: {
+            action1: {ID: 0x01, parameters: [{name: "data", type: Zcl.DataType.UINT8, max: 0xff}]},
+            action2: {ID: 0x02, parameters: [{name: "data", type: Zcl.DataType.UINT8, max: 0xff}]},
+            action3: {ID: 0x03, parameters: [{name: "data", type: Zcl.DataType.UINT8, max: 0xff}]},
+            action4: {ID: 0x04, parameters: [{name: "data", type: Zcl.DataType.UINT8, max: 0xff}]},
+            action6: {ID: 0x06, parameters: [{name: "data", type: Zcl.DataType.UINT8, max: 0xff}]},
+        },
         commandsResponse: {},
     });
 }

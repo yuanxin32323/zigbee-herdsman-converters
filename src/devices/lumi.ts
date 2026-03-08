@@ -148,10 +148,7 @@ export const definitions: DefinitionWithExtend[] = [
             e.power_outage_memory(),
             // When in rgbw mode, only one of color and colortemp will be valid, and l2 will be invalid
             // Do not control l2 in rgbw mode
-            e
-                .light_brightness_colortemp_colorxy([153, 370])
-                .removeFeature("color_temp_startup")
-                .withEndpoint("l1"),
+            e.light_brightness_colortemp_colorxy([153, 370]).removeFeature("color_temp_startup").withEndpoint("l1"),
             e.light_brightness_colortemp([153, 370]).removeFeature("color_temp_startup").withEndpoint("l2"),
             e.enum("dimmer_mode", ea.ALL, ["rgbw", "dual_ct"]).withDescription("Switch between rgbw mode or dual color temperature mode"),
         ],
@@ -972,7 +969,7 @@ export const definitions: DefinitionWithExtend[] = [
             // set "event" mode
             await endpoint1.write("manuSpecificLumi", {mode: 1}, {manufacturerCode: manufacturerCode, disableResponse: true});
         },
-        extend: [lumiPreventReset()],
+        extend: [lumiZigbeeOTA(), lumiPreventReset()],
     },
     {
         zigbeeModel: ["lumi.ctrl_neutral1"],
@@ -1474,7 +1471,6 @@ export const definitions: DefinitionWithExtend[] = [
                 },
             }),
             lumiElectricityMeter(),
-            lumiPower(),
             lumiPreventReset(),
         ],
     },
@@ -2087,6 +2083,32 @@ export const definitions: DefinitionWithExtend[] = [
             e.power_outage_memory(),
         ],
         extend: [lumiZigbeeOTA()],
+    },
+    {
+        zigbeeModel: ["lumi.plug.acn005"],
+        model: "ZNQBCZ11LM",
+        vendor: "Aqara",
+        description: "Smart wall outlet H2 (USB)",
+        fromZigbee: [lumi.fromZigbee.lumi_specific],
+        toZigbee: [lumi.toZigbee.lumi_button_switch_mode],
+        meta: {multiEndpoint: true, multiEndpointSkip: ["power", "energy"]},
+        endpoint: () => {
+            return {relay: 1, usb: 2};
+        },
+        exposes: [
+            e
+                .enum("button_switch_mode", exposes.access.ALL, ["relay", "relay_and_usb"])
+                .withDescription("Control both relay and usb or only the relay with the physical switch button"),
+        ],
+        extend: [
+            lumi.lumiModernExtend.lumiZigbeeOTA(),
+            lumi.lumiModernExtend.lumiOnOff({powerOutageMemory: "enum", endpointNames: ["relay", "usb"]}),
+            lumi.lumiModernExtend.lumiLedDisabledNight(),
+            lumi.lumiModernExtend.lumiPower(),
+            lumi.lumiModernExtend.lumiElectricityMeter(),
+            lumi.lumiModernExtend.lumiOverloadProtection(),
+            lumi.lumiModernExtend.lumiButtonLock(),
+        ],
     },
     {
         zigbeeModel: ["lumi.sensor_smoke"],
@@ -2948,17 +2970,54 @@ export const definitions: DefinitionWithExtend[] = [
         model: "ZNDDQDQ11LM",
         vendor: "Aqara",
         description: "T1 light strip controller",
-        extend: [lumiZigbeeOTA(), lumiLight({colorTemp: true, powerOutageMemory: "switch"})],
+        extend: [
+            lumi.lumiModernExtend.lumiLight({colorTemp: true, colorTempRange: [154, 370], color: false, powerOutageMemory: "enum"}),
+            m.identify(),
+            m.forcePowerSource({powerSource: "Mains (single phase)"}),
+            lumi.lumiModernExtend.lumiZigbeeOTA(),
+            lumi.lumiModernExtend.lumiDimmingRangeMin(),
+            lumi.lumiModernExtend.lumiDimmingRangeMax(),
+            lumi.lumiModernExtend.lumiOffOnDuration(),
+            lumi.lumiModernExtend.lumiOnOffDuration(),
+            lumi.lumiModernExtend.lumiTransitionCurveCurvature(),
+        ],
     },
     {
         zigbeeModel: ["lumi.dimmer.acn004"],
         model: "ZNDDQDQ12LM",
         vendor: "Aqara",
         description: "T1 light strip controller",
-        extend: [lumiZigbeeOTA(), lumiLight({colorTemp: true, powerOutageMemory: "switch"})],
+        extend: [
+            lumi.lumiModernExtend.lumiLight({colorTemp: true, colorTempRange: [154, 370], color: false, powerOutageMemory: "enum"}),
+            m.identify(),
+            m.forcePowerSource({powerSource: "Mains (single phase)"}),
+            lumi.lumiModernExtend.lumiZigbeeOTA(),
+            lumi.lumiModernExtend.lumiDimmingRangeMin(),
+            lumi.lumiModernExtend.lumiDimmingRangeMax(),
+            lumi.lumiModernExtend.lumiOffOnDuration(),
+            lumi.lumiModernExtend.lumiOnOffDuration(),
+            lumi.lumiModernExtend.lumiTransitionCurveCurvature(),
+        ],
     },
     {
-        zigbeeModel: ["lumi.light.acn026", "lumi.light.acn024", "lumi.light.acn025"],
+        zigbeeModel: ["lumi.dimmer.acn005"],
+        model: "ZNDDQDQ13LM",
+        vendor: "Aqara",
+        description: "T1 light strip controller",
+        extend: [
+            lumi.lumiModernExtend.lumiLight({colorTemp: true, colorTempRange: [154, 370], color: false, powerOutageMemory: "enum"}),
+            m.identify(),
+            m.forcePowerSource({powerSource: "Mains (single phase)"}),
+            lumi.lumiModernExtend.lumiZigbeeOTA(),
+            lumi.lumiModernExtend.lumiDimmingRangeMin(),
+            lumi.lumiModernExtend.lumiDimmingRangeMax(),
+            lumi.lumiModernExtend.lumiOffOnDuration(),
+            lumi.lumiModernExtend.lumiOnOffDuration(),
+            lumi.lumiModernExtend.lumiTransitionCurveCurvature(),
+        ],
+    },
+    {
+        zigbeeModel: ["lumi.light.acn026", "lumi.light.acn024", "lumi.light.acn025", "lumi.light.acn023"],
         model: "SSWQD03LM",
         vendor: "Aqara",
         description: "Spotlight T2",
@@ -3459,9 +3518,9 @@ export const definitions: DefinitionWithExtend[] = [
         ],
         fromZigbee: [lumi.fromZigbee.lumi_contact, lumi.fromZigbee.lumi_specific, fz.ias_contact_alarm_1],
         toZigbee: [],
-        exposes: [e.contact(), e.battery(), e.battery_voltage()],
+        exposes: [e.contact(), e.battery(), e.battery_voltage(), e.device_temperature(), e.power_outage_count(false)],
         meta: {battery: {voltageToPercentage: {min: 2850, max: 3000}}},
-        extend: [m.quirkCheckinInterval("1_HOUR"), lumiZigbeeOTA()],
+        extend: [m.quirkCheckinInterval("1_HOUR")],
     },
     {
         zigbeeModel: ["lumi.plug.sacn02"],
@@ -5081,11 +5140,11 @@ export const definitions: DefinitionWithExtend[] = [
         vendor: "Aqara",
         description: "Floor heating thermostat W500",
         extend: [
-            m.electricityMeter(),
+            m.electricityMeter({current: false, voltage: false, power: {divisor: 1}, energy: {divisor: 1000}}),
             m.thermostat({
-                setpoints: {values: {occupiedHeatingSetpoint: {min: 5, max: 40, step: 0.5}}},
+                setpoints: {values: {occupiedHeatingSetpoint: {min: 5, max: 40, step: 0.5}}, configure: {skip: true}},
                 localTemperatureCalibration: {values: true},
-                temperatureSetpointHold: true,
+                temperatureSetpointHold: {configure: {skip: true}},
                 temperatureSetpointHoldDuration: true,
                 systemMode: {values: ["off", "heat"]},
                 runningState: {
@@ -5114,7 +5173,7 @@ export const definitions: DefinitionWithExtend[] = [
                 access: "STATE_GET",
                 zigbeeCommandOptions: {manufacturerCode},
             }),
-            m.humidity(),
+            m.humidity({reporting: false}),
             m.enumLookup({
                 name: "sensor",
                 lookup: {internal: 0, external: 1, ntc: 2},

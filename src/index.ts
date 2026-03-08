@@ -73,7 +73,6 @@ export {
     Tz,
     type OnEvent,
 };
-export {getConfigureKey} from "./lib/configureKey";
 export {setLogger} from "./lib/logger";
 export {clear as clearGlobalStore} from "./lib/store";
 
@@ -403,17 +402,16 @@ function processExtensions(definition: DefinitionWithExtend): Definition {
             };
         }
 
-        return {toZigbee, fromZigbee, exposes, meta, configure, endpoint, onEvent, ota, options, ...definitionWithoutExtend};
+        return {version: "0.0.0", toZigbee, fromZigbee, exposes, meta, configure, endpoint, onEvent, ota, options, ...definitionWithoutExtend};
     }
 
-    return {...definition};
+    return {version: "0.0.0", ...definition};
 }
 
 export function prepareDefinition(definition: DefinitionWithExtend): Definition {
     const finalDefinition = processExtensions(definition);
 
     finalDefinition.toZigbee = [
-        ...finalDefinition.toZigbee,
         toZigbee.scene_store,
         toZigbee.scene_recall,
         toZigbee.scene_add,
@@ -425,6 +423,9 @@ export function prepareDefinition(definition: DefinitionWithExtend): Definition 
         toZigbee.command,
         toZigbee.factory_reset,
         toZigbee.zcl_command,
+        // Add device specific toZigbee converters as last, otherwise the Tuya datapoints
+        // converters consume e.g. the `read` and `write`.
+        ...finalDefinition.toZigbee,
     ];
 
     if (definition.externalConverterName) {
