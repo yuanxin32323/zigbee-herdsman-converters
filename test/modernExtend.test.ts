@@ -132,7 +132,7 @@ describe("ModernExtend", () => {
 
     test("light({color: true})", async () => {
         await assertDefinition({
-            device: mockDevice({modelID: "AD-E14RGBW3001", endpoints: [{inputClusters: ["genOnOff", "genLevelCtrl", "lightingColorCtrl"]}]}),
+            device: mockDevice({modelID: "ZHA-ColorLight", endpoints: [{inputClusters: ["genOnOff", "genLevelCtrl", "lightingColorCtrl"]}]}),
             meta: {},
             fromZigbee: [fz.on_off, fz.brightness, fz.level_config, fz.color_colortemp, fz.power_on_behavior],
             toZigbee: [
@@ -223,13 +223,13 @@ describe("ModernExtend", () => {
         });
     });
 
-    test(`philipsLight({gradient: {extraEffects: ['sparkle', 'opal', 'glisten']}, colorTemp: {range: [153, 500]}})`, async () => {
+    test(`philips.m.light({colorTemp: {range: [153, 500]}, color: true, gradient: {extraEffects: ["sparkle", "opal", "glisten"]}})`, async () => {
         await assertDefinition({
             device: mockDevice({
                 modelID: "LCX012",
-                endpoints: [{ID: 1, inputClusters: ["genOnOff", "genLevelCtrl", "lightingColorCtrl", "manuSpecificPhilips2"]}, {ID: 242}],
+                endpoints: [{ID: 1, inputClusters: ["genOnOff", "genLevelCtrl", "lightingColorCtrl"], inputClusterIDs: [0xfc03]}, {ID: 242}],
             }),
-            meta: {supportsHueAndSaturation: true, turnsOffAtBrightness1: true},
+            meta: {supportsEnhancedHue: true, supportsHueAndSaturation: true, turnsOffAtBrightness1: true},
             fromZigbee: [fz.on_off, fz.brightness, fz.level_config, fz.color_colortemp, fz.power_on_behavior, philips.fz.gradient],
             toZigbee: [
                 "state",
